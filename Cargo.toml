@@ -1,5 +1,10 @@
 [workspace]
-members = [
+members = [ "src/satoshi_register",
     "src/satoshi_rust_backend"
 ]
 resolver = "2"
+
+[workspace.dependencies]
+candid = "0.10"
+ic-cdk = "0.13"
+ic-cdk-timers = "0.7" # Feel free to remove this dependency if you don't need timers
