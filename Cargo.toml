@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "src/satoshi_rust_backend"
+]
+resolver = "2"
