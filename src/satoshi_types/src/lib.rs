@@ -10,7 +10,7 @@ struct RcbytesVisitor;
 pub type FD = u128;
 
 impl<'de> Visitor<'de> for RcbytesVisitor {
-    type Value = Rcbytes;
+    type Value = ReadOnlyRcbytes;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("a byte array")
@@ -20,14 +20,14 @@ impl<'de> Visitor<'de> for RcbytesVisitor {
     where
         E: serde::de::Error,
     {
-        Ok(Rcbytes(Rc::new(RefCell::new(ByteBuf::from(v)))))
+        Ok(ReadOnlyRcbytes(Rc::new(ByteBuf::from(v))))
     }
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(Rcbytes(Rc::new(RefCell::new(ByteBuf::from(v)))))
+        Ok(ReadOnlyRcbytes(Rc::new(ByteBuf::from(v))))
     }
 
     
@@ -44,13 +44,13 @@ impl<'de> Visitor<'de> for RcbytesVisitor {
             bytes.push(b)
         };
 
-        Ok(Rcbytes(Rc::new(RefCell::new(ByteBuf::from(bytes)))))
+        Ok(ReadOnlyRcbytes(Rc::new(ByteBuf::from(bytes))))
     }
 
     fn visit_byte_buf<E>(self, v: Vec<u8>) -> Result<Self::Value, E>
         where
             E: serde::de::Error, {
-        Ok(Rcbytes(Rc::new(RefCell::new(ByteBuf::from(v)))))
+        Ok(ReadOnlyRcbytes(Rc::new(ByteBuf::from(v))))
     }
 
    
@@ -83,15 +83,15 @@ impl<'de> Visitor<'de> for RcbytesVisitor {
     }
 
 }
-pub struct Rcbytes(pub Rc<RefCell<ByteBuf>>);
+pub struct ReadOnlyRcbytes(pub Rc<ByteBuf>);
 
-impl Rcbytes {
-    pub fn new(arc : Rc<RefCell<ByteBuf>>) -> Self {
-        Rcbytes(arc)
+impl ReadOnlyRcbytes {
+    pub fn new(arc : Rc<ByteBuf>) -> Self {
+        ReadOnlyRcbytes(arc)
     }
 }
 
-impl CandidType for Rcbytes {
+impl CandidType for ReadOnlyRcbytes {
     fn _ty() -> candid::types::Type {
         TypeInner::Vec(TypeInner::Nat8.into()).into()
     }
@@ -99,11 +99,11 @@ impl CandidType for Rcbytes {
     fn idl_serialize<S>(&self, serializer: S) -> Result<(), S::Error>
     where
         S: candid::types::Serializer {
-       serializer.serialize_blob(&self.0.borrow())
+       serializer.serialize_blob(&self.0)
     }
 }
 
-impl<'de> Deserialize<'de> for Rcbytes {
+impl<'de> Deserialize<'de> for ReadOnlyRcbytes {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de> {
@@ -111,15 +111,15 @@ impl<'de> Deserialize<'de> for Rcbytes {
     }
 }
 
-impl Serialize for Rcbytes {
+impl Serialize for ReadOnlyRcbytes {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer {
-            serializer.serialize_bytes(&self.0.borrow())
+            serializer.serialize_bytes(&self.0)
     }
 }
 
-impl Clone for Rcbytes {
+impl Clone for ReadOnlyRcbytes {
     fn clone(&self) -> Self {
         Self(self.0.clone())
     }
@@ -130,12 +130,12 @@ pub struct ICPFile {
     pub id : u128,
     pub owner: String,
     pub name: String,
-    pub data : Rcbytes
+    pub data : ReadOnlyRcbytes
 }
 
 impl ICPFile {
     pub(crate) fn get_stat(&self) -> ICPFileStat {
-        ICPFileStat { name: self.name.clone(), size: self.data.0.borrow().len(), id: self.id }
+        ICPFileStat { name: self.name.clone(), size: self.data.0.len(), id: self.id }
     }
 }
 
@@ -167,4 +167,12 @@ pub struct PathNode {
 pub enum Path {
     Path(String),
     File(String, ICPFileStat)
+}
+
+#[derive(CandidType)]
+pub enum RegistryError {
+    UserIdExists,
+    AmountBelowMin,
+    UserNotFound,
+    SystemError(String)
 }

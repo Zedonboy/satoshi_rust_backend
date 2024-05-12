@@ -1,0 +1,15 @@
+type RegistryError = variant {
+  UserIdExists;
+  AmountBelowMin;
+  SystemError : text;
+  UserNotFound;
+};
+type Result = variant { Ok : text; Err : RegistryError };
+type Result_1 = variant { Ok : nat; Err : RegistryError };
+service : {
+  create_user : () -> (Result);
+  export_candid : () -> (text) query;
+  generate_deposit_address : () -> (text) query;
+  get_user_canister : () -> (Result) query;
+  top_up_user_canister : () -> (Result_1);
+}
