@@ -1,3 +1,50 @@
+type CanisterStatusResponse = record {
+  status : CanisterStatusType;
+  memory_size : nat;
+  cycles : nat;
+  settings : DefiniteCanisterSettings;
+  query_stats : QueryStats;
+  idle_cycles_burned_per_day : nat;
+  module_hash : opt blob;
+  reserved_cycles : nat;
+};
+type CanisterStatusType = variant { stopped; stopping; running };
+type DefiniteCanisterSettings = record {
+  freezing_threshold : nat;
+  controllers : vec principal;
+  reserved_cycles_limit : nat;
+  memory_allocation : nat;
+  compute_allocation : nat;
+};
+type ICPFile = record { id : nat; owner : text; data : blob; name : text };
+type ICPFileError = variant {
+  Error : text;
+  NotFound;
+  NotAuthorized;
+  InvalidPath : text;
+};
+type ICPFileStat = record { id : nat; name : text; size : nat64 };
+type Path = variant { File : record { text; ICPFileStat }; Path : text };
+type PathNode = record { id : nat64; node_type : Path; children : vec nat64 };
+type QueryStats = record {
+  response_payload_bytes_total : nat;
+  num_instructions_total : nat;
+  num_calls_total : nat;
+  request_payload_bytes_total : nat;
+};
+type Result = variant { Ok; Err : ICPFileError };
+type Result_1 = variant { Ok : nat; Err : ICPFileError };
+type Result_2 = variant { Ok : ICPFile; Err : ICPFileError };
+type Result_3 = variant { Ok : vec PathNode; Err : ICPFileError };
 service : {
-    "greet": (text) -> (text) query;
+  add_chunk : (nat, blob) -> (Result);
+  create_file : (ICPFile, opt text) -> (Result_1);
+  delete_file : (PathNode) -> (Result_1);
+  export_candid : () -> (text) query;
+  get_file : (nat) -> (Result_2) query;
+  get_files : () -> (vec ICPFileStat) query;
+  get_path_contents : (opt text) -> (Result_3) query;
+  get_status : () -> (CanisterStatusResponse) query;
+  greet : (text) -> (text) query;
+  truncate_file : (nat) -> (Result);
 }

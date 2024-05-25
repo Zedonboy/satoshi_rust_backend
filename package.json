@@ -1,0 +1,14 @@
+{
+  "name": "satoshi_rust",
+  "version": "1.0.0",
+  "description": "Welcome to your new satoshi_rust project and to the internet computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "workspaces": [
+    "src/satoshi_sdk"
+  ]
+}
