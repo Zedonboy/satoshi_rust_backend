@@ -15,6 +15,7 @@
       "candid": "src/satoshi_rust_backend/satoshi_rust_backend.did",
       "package": "satoshi_rust_backend",
       "type": "rust"
+      
     },
 
     "satoshi_register": {
