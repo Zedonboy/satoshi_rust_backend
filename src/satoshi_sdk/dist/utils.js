@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.chunkArrayBuffer = exports.formatBytes = exports.get_registry_actor = exports.get_storage_actor = void 0;
-const satoshi_rust_backend_1 = require("../declarations/satoshi_rust_backend");
-const satoshi_register_1 = require("../declarations/satoshi_register");
-const config_1 = require("./config");
+const index_js_1 = require("../declarations/satoshi_rust_backend/index.js");
+const index_js_2 = require("../declarations/satoshi_register/index.js");
+const config_js_1 = require("./config.js");
 function get_storage_actor(identity, canister_id) {
     let agent = new HttpAgent({
         identity: identity,
-        host: config_1.HOST,
+        host: config_js_1.HOST,
     });
-    return (0, satoshi_rust_backend_1.createActor)(canister_id, {
+    return (0, index_js_1.createActor)(canister_id, {
         agent
     });
 }
@@ -17,9 +17,9 @@ exports.get_storage_actor = get_storage_actor;
 function get_registry_actor(identity, canister_id) {
     let agent = new HttpAgent({
         identity: identity,
-        host: config_1.HOST,
+        host: config_js_1.HOST,
     });
-    return (0, satoshi_register_1.createActor)(canister_id, {
+    return (0, index_js_2.createActor)(canister_id, {
         agent
     });
 }
