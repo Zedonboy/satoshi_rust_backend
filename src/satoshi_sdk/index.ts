@@ -1,4 +1,3 @@
-import { createActor, canisterId } from "../declarations/satoshi_rust_backend"
 import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from '@dfinity/agent';
 import { HOST, identityProvider } from './config';
