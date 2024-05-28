@@ -1,13 +1,14 @@
 import { AuthClient } from "@dfinity/auth-client";
-import { get_registry_actor, get_storage_actor } from "./utils";
+import { chunkArrayBuffer, get_registry_actor, get_storage_actor } from "./utils";
+import { Identity } from "@dfinity/agent";
 
 export class UserStorageCanister {
   backend_actor
-  constructor(canister_id, client) {
-    this.backend_actor = get_storage_actor(client.getIdentity(), id);
+  constructor(canister_id : string, identity : Identity) {
+    this.backend_actor = get_storage_actor(identity, canister_id);
   }
 
-  async upload_file(file, path) {
+  async upload_file(file : File, path : string) {
     let auth = await AuthClient.create();
     let authenticated = await auth.isAuthenticated();
     if (!authenticated) {
@@ -23,14 +24,14 @@ export class UserStorageCanister {
           let v = await this.backend_actor.create_file(
             {
               name: file.name,
-              id: 0,
+              id: BigInt(0),
               owner: "",
               data: new Uint8Array(element),
             },
             [path]
           );
 
-          if (v.Err) {
+          if ("Err" in v) {
             throw new Error("Could not create File");
           }
 
@@ -45,7 +46,7 @@ export class UserStorageCanister {
           BigInt(fd),
           new Uint8Array(element)
         );
-        if (rst.Err) {
+        if ("Err" in rst) {
           throw new Error("Error Adding Chunks");
         }
       }
@@ -54,12 +55,12 @@ export class UserStorageCanister {
     } else {
       let rxt = await this.backend_actor.create_file({
         name: file.name,
-        id: 0,
+        id: BigInt(0),
         owner: "",
         data: new Uint8Array(await file.arrayBuffer()),
-      });
+      }, [path]);
 
-      if (rxt.Err) {
+      if ("Err" in rxt) {
         throw new Error("Could not create File");
       }
 
@@ -75,15 +76,15 @@ export class UserStorageCanister {
     return await this.backend_actor.get_status()
   }
 
-  async get_paths() {
-    return await this.backend_actor.get_path_contents()
+  async get_paths(path ?: string) {
+    return await this.backend_actor.get_path_contents(path ? [path] : [])
   }
 }
 
 export class RegistryCanister {
     backend_actor
-  constructor(canister_id, client) {
-    this.backend_actor = get_registry_actor(client.getIdentity(), id);
+  constructor(canister_id : string) {
+    this.backend_actor = get_registry_actor(undefined, canister_id);
   }
 
   async create_user() {
