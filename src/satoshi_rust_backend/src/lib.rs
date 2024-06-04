@@ -4,6 +4,7 @@ use candid::{candid_method, Principal};
 use ic_cdk::{api::{is_controller, management_canister::main::{canister_status, CanisterIdRecord, CanisterInfoRequest, CanisterStatusResponse}}, caller, id, query, update};
 use types::{ICPFile, ICPFileError, ICPFileStat, Path, PathNode, Rcbytes, FD};
 mod types;
+use sha2::{Sha256, Sha512, Digest};
 
 #[ic_cdk::query]
 fn greet(name: String) -> String {
@@ -147,6 +148,26 @@ async fn get_status() -> CanisterStatusResponse {
     let arg = CanisterIdRecord { canister_id: id() };
     let (c_resp, ) = canister_status(arg).await.unwrap();
     c_resp
+}
+
+#[update(guard = "not_anonymous")]
+async fn end_file_upload(id : FD) {
+    FILE_STORE.with_borrow_mut(|store| {
+       let file_opt = store.get_mut(&id);
+       if file_opt.is_none() {
+           return;
+       }
+
+       let file = file_opt.unwrap();
+       let mut hasher = Sha256::new();
+       let Rcbytes(g) = &file.data;
+       let v = g.borrow_mut();
+       hasher.update(v.to_vec());
+       let result = hasher.finalize();
+       let hash_str = hex::encode(result);
+       file.hash = Some(hash_str)
+
+    })
 }
 
 #[update(guard = "not_anonymous")]

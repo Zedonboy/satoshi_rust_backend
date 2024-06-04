@@ -14,3 +14,5 @@ ic-cdk = {workspace = true}
 ic-cdk-timers = {workspace = true} # Feel free to remove this dependency if you don't need timers
 serde = {workspace = true}
 serde_bytes = {workspace = true}
+sha2 = {workspace = true}
+hex = {workspace = true}

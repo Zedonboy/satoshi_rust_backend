@@ -494,10 +494,12 @@ name = "satoshi_rust_backend"
 version = "0.1.0"
 dependencies = [
  "candid",
+ "hex",
  "ic-cdk",
  "ic-cdk-timers",
  "serde",
  "serde_bytes",
+ "sha2",
 ]
 
 [[package]]

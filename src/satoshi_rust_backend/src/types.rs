@@ -130,12 +130,13 @@ pub struct ICPFile {
     pub id : u128,
     pub owner: String,
     pub name: String,
-    pub data : Rcbytes
+    pub data : Rcbytes,
+    pub hash : Option<String>
 }
 
 impl ICPFile {
     pub(crate) fn get_stat(&self) -> ICPFileStat {
-        ICPFileStat { name: self.name.clone(), size: self.data.0.borrow().len(), id: self.id }
+        ICPFileStat { name: self.name.clone(), size: self.data.0.borrow().len(), id: self.id, hash: self.hash.clone() }
     }
 }
 
@@ -151,7 +152,8 @@ pub enum ICPFileError {
 pub struct ICPFileStat {
     pub name: String,
     pub size: usize,
-    pub id : FD
+    pub id : FD,
+    pub hash : Option<String>
 }
 
 #[derive(CandidType, Deserialize, Clone, Debug)]
