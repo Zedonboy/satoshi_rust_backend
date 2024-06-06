@@ -83,8 +83,8 @@ export class UserStorageCanister {
 
 export class RegistryCanister {
     backend_actor
-  constructor(canister_id : string) {
-    this.backend_actor = get_registry_actor(undefined, canister_id);
+  constructor(canister_id : string, identity : Identity) {
+    this.backend_actor = get_registry_actor(identity, canister_id);
   }
 
   async create_user() {

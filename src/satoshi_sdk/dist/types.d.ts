@@ -9,7 +9,7 @@ export declare class UserStorageCanister {
 }
 export declare class RegistryCanister {
     backend_actor: import("@dfinity/agent").ActorSubclass<import("./declarations/satoshi_register/satoshi_register.did")._SERVICE>;
-    constructor(canister_id: string);
+    constructor(canister_id: string, identity: Identity);
     create_user(): Promise<import("./declarations/satoshi_register/satoshi_register.did").Result>;
     get_deposit_address(): Promise<string>;
     get_user_canister(): Promise<import("./declarations/satoshi_register/satoshi_register.did").Result>;

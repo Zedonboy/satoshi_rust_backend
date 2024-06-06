@@ -82,8 +82,8 @@ class UserStorageCanister {
 }
 exports.UserStorageCanister = UserStorageCanister;
 class RegistryCanister {
-    constructor(canister_id) {
-        this.backend_actor = (0, utils_1.get_registry_actor)(undefined, canister_id);
+    constructor(canister_id, identity) {
+        this.backend_actor = (0, utils_1.get_registry_actor)(identity, canister_id);
     }
     create_user() {
         return __awaiter(this, void 0, void 0, function* () {
