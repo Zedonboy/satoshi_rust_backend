@@ -1,6 +1,8 @@
 import { AuthClient } from "@dfinity/auth-client";
 import { chunkArrayBuffer, get_registry_actor, get_storage_actor } from "./utils";
 import { Identity } from "@dfinity/agent";
+import { Result, Result_1 } from "./declarations/satoshi_register/satoshi_register.did";
+
 
 export class UserStorageCanister {
   backend_actor
@@ -87,7 +89,7 @@ export class RegistryCanister {
     this.backend_actor = get_registry_actor(identity, canister_id);
   }
 
-  create_user() {
+  create_user() : Promise<Result> {
     return this.backend_actor.create_user()
   }
 
@@ -95,11 +97,11 @@ export class RegistryCanister {
     return this.backend_actor.generate_deposit_address()
   }
 
-  get_user_canister() {
+  get_user_canister() : Promise<Result> {
     return this.backend_actor.get_user_canister()
   }
 
-  top_up() {
+  top_up() : Promise<Result_1> {
     return this.backend_actor.top_up_user_canister()
   }
 }

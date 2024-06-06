@@ -1,4 +1,5 @@
 import { Identity } from "@dfinity/agent";
+import { Result, Result_1 } from "./declarations/satoshi_register/satoshi_register.did";
 export declare class UserStorageCanister {
     backend_actor: import("@dfinity/agent").ActorSubclass<import("./declarations/satoshi_rust_backend/satoshi_rust_backend.did")._SERVICE>;
     constructor(canister_id: string, identity: Identity);
@@ -10,8 +11,8 @@ export declare class UserStorageCanister {
 export declare class RegistryCanister {
     backend_actor: import("@dfinity/agent").ActorSubclass<import("./declarations/satoshi_register/satoshi_register.did")._SERVICE>;
     constructor(canister_id: string, identity: Identity);
-    create_user(): Promise<import("./declarations/satoshi_register/satoshi_register.did").Result>;
+    create_user(): Promise<Result>;
     get_deposit_address(): Promise<string>;
-    get_user_canister(): Promise<import("./declarations/satoshi_register/satoshi_register.did").Result>;
-    top_up(): Promise<import("./declarations/satoshi_register/satoshi_register.did").Result_1>;
+    get_user_canister(): Promise<Result>;
+    top_up(): Promise<Result_1>;
 }
