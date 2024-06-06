@@ -2,6 +2,7 @@ import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent } from '@dfinity/agent';
 import { HOST, identityProvider } from './config';
 export * from "./types"
+export * from "./config"
 
 export async function logout () {
     let auth = await AuthClient.create()
