@@ -27,6 +27,7 @@ exports.is_authenticated = exports.authenticate = exports.logout = void 0;
 const auth_client_1 = require("@dfinity/auth-client");
 const config_1 = require("./config");
 __exportStar(require("./types"), exports);
+__exportStar(require("./config"), exports);
 function logout() {
     return __awaiter(this, void 0, void 0, function* () {
         let auth = yield auth_client_1.AuthClient.create();
