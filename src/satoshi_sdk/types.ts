@@ -87,19 +87,19 @@ export class RegistryCanister {
     this.backend_actor = get_registry_actor(identity, canister_id);
   }
 
-  async create_user() {
-    return await this.backend_actor.create_user()
+  create_user() {
+    return this.backend_actor.create_user()
   }
 
-  async get_deposit_address() {
-    return await this.backend_actor.generate_deposit_address()
+  get_deposit_address() {
+    return this.backend_actor.generate_deposit_address()
   }
 
-  async get_user_canister() {
-    return await this.backend_actor.get_user_canister()
+  get_user_canister() {
+    return this.backend_actor.get_user_canister()
   }
 
-  async top_up() {
-    return await this.backend_actor.top_up_user_canister()
+  top_up() {
+    return this.backend_actor.top_up_user_canister()
   }
 }

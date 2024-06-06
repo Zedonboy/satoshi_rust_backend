@@ -86,24 +86,16 @@ class RegistryCanister {
         this.backend_actor = (0, utils_1.get_registry_actor)(identity, canister_id);
     }
     create_user() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.backend_actor.create_user();
-        });
+        return this.backend_actor.create_user();
     }
     get_deposit_address() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.backend_actor.generate_deposit_address();
-        });
+        return this.backend_actor.generate_deposit_address();
     }
     get_user_canister() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.backend_actor.get_user_canister();
-        });
+        return this.backend_actor.get_user_canister();
     }
     top_up() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.backend_actor.top_up_user_canister();
-        });
+        return this.backend_actor.top_up_user_canister();
     }
 }
 exports.RegistryCanister = RegistryCanister;
