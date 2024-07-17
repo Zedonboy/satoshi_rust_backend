@@ -1,6 +1,7 @@
 import { createActor as storageActor, canisterId } from "./declarations/satoshi_rust_backend/index.js";
 import {createActor as registryActor} from "./declarations/satoshi_register/index.js"
 import { HOST } from "./config.js";
+import { HttpAgent } from "@dfinity/agent";
 export function get_storage_actor(identity, canister_id) {
     let agent = new HttpAgent({
         identity: identity,

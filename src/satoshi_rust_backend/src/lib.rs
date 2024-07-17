@@ -1,7 +1,7 @@
 use std::{ cell::RefCell, collections::{BTreeMap, HashSet}, str::FromStr};
 
 use candid::{candid_method, Principal};
-use ic_cdk::{api::{is_controller, management_canister::main::{canister_status, CanisterIdRecord, CanisterInfoRequest, CanisterStatusResponse}}, caller, id, query, update};
+use ic_cdk::{api::{call, canister_balance, is_controller, management_canister::main::{canister_status, CanisterIdRecord, CanisterInfoRequest, CanisterStatusResponse}}, caller, id, print, query, update};
 use types::{ICPFile, ICPFileError, ICPFileStat, Path, PathNode, Rcbytes, FD};
 mod types;
 use sha2::{Sha256, Sha512, Digest};
@@ -144,10 +144,8 @@ fn is_path_in_node(path: String, node : &PathNode) -> Option<usize> {
 }
 
 #[query]
-async fn get_status() -> CanisterStatusResponse {
-    let arg = CanisterIdRecord { canister_id: id() };
-    let (c_resp, ) = canister_status(arg).await.unwrap();
-    c_resp
+async fn get_status() -> u64 {
+    canister_balance()
 }
 
 #[update(guard = "not_anonymous")]
@@ -172,6 +170,7 @@ async fn end_file_upload(id : FD) {
 
 #[update(guard = "not_anonymous")]
 async fn create_file(mut file : ICPFile, path : Option<String>) -> Result<FD, ICPFileError> {
+    print("Create File: receiving request");
     let fd = get_id();
     file.id = fd;
     file.owner = caller().to_text();

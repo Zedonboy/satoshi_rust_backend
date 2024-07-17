@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.init = exports.idlFactory = void 0;
-const idlFactory = ({ IDL }) => {
+export const idlFactory = ({ IDL }) => {
     const MetadataMap = IDL.Rec();
     const MetadataMapV2 = IDL.Rec();
     const ArchiveConfig = IDL.Record({
@@ -376,8 +373,7 @@ const idlFactory = ({ IDL }) => {
         'verify_tentative_device': IDL.Func([UserNumber, IDL.Text], [VerifyTentativeDeviceResponse], []),
     });
 };
-exports.idlFactory = idlFactory;
-const init = ({ IDL }) => {
+export const init = ({ IDL }) => {
     const ArchiveConfig = IDL.Record({
         'polling_interval_ns': IDL.Nat64,
         'entries_buffer_limit': IDL.Nat64,
@@ -398,4 +394,3 @@ const init = ({ IDL }) => {
     });
     return [IDL.Opt(InternetIdentityInit)];
 };
-exports.init = init;

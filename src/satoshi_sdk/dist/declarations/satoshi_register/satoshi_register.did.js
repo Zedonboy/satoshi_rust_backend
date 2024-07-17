@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.init = exports.idlFactory = void 0;
-const idlFactory = ({ IDL }) => {
+export const idlFactory = ({ IDL }) => {
     const RegistryError = IDL.Variant({
         'UserIdExists': IDL.Null,
         'AmountBelowMin': IDL.Null,
@@ -18,6 +15,4 @@ const idlFactory = ({ IDL }) => {
         'top_up_user_canister': IDL.Func([], [Result_1], []),
     });
 };
-exports.idlFactory = idlFactory;
-const init = ({ IDL }) => { return []; };
-exports.init = init;
+export const init = ({ IDL }) => { return []; };

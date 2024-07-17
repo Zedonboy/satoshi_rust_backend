@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.init = exports.idlFactory = void 0;
-const idlFactory = ({ IDL }) => {
+export const idlFactory = ({ IDL }) => {
     const ICPFileError = IDL.Variant({
         'Error': IDL.Text,
         'NotFound': IDL.Null,
@@ -13,11 +10,13 @@ const idlFactory = ({ IDL }) => {
         'id': IDL.Nat,
         'owner': IDL.Text,
         'data': IDL.Vec(IDL.Nat8),
+        'hash': IDL.Opt(IDL.Text),
         'name': IDL.Text,
     });
     const Result_1 = IDL.Variant({ 'Ok': IDL.Nat, 'Err': ICPFileError });
     const ICPFileStat = IDL.Record({
         'id': IDL.Nat,
+        'hash': IDL.Opt(IDL.Text),
         'name': IDL.Text,
         'size': IDL.Nat64,
     });
@@ -35,47 +34,18 @@ const idlFactory = ({ IDL }) => {
         'Ok': IDL.Vec(PathNode),
         'Err': ICPFileError,
     });
-    const CanisterStatusType = IDL.Variant({
-        'stopped': IDL.Null,
-        'stopping': IDL.Null,
-        'running': IDL.Null,
-    });
-    const DefiniteCanisterSettings = IDL.Record({
-        'freezing_threshold': IDL.Nat,
-        'controllers': IDL.Vec(IDL.Principal),
-        'reserved_cycles_limit': IDL.Nat,
-        'memory_allocation': IDL.Nat,
-        'compute_allocation': IDL.Nat,
-    });
-    const QueryStats = IDL.Record({
-        'response_payload_bytes_total': IDL.Nat,
-        'num_instructions_total': IDL.Nat,
-        'num_calls_total': IDL.Nat,
-        'request_payload_bytes_total': IDL.Nat,
-    });
-    const CanisterStatusResponse = IDL.Record({
-        'status': CanisterStatusType,
-        'memory_size': IDL.Nat,
-        'cycles': IDL.Nat,
-        'settings': DefiniteCanisterSettings,
-        'query_stats': QueryStats,
-        'idle_cycles_burned_per_day': IDL.Nat,
-        'module_hash': IDL.Opt(IDL.Vec(IDL.Nat8)),
-        'reserved_cycles': IDL.Nat,
-    });
     return IDL.Service({
         'add_chunk': IDL.Func([IDL.Nat, IDL.Vec(IDL.Nat8)], [Result], []),
         'create_file': IDL.Func([ICPFile, IDL.Opt(IDL.Text)], [Result_1], []),
         'delete_file': IDL.Func([PathNode], [Result_1], []),
+        'end_file_upload': IDL.Func([IDL.Nat], [], []),
         'export_candid': IDL.Func([], [IDL.Text], ['query']),
         'get_file': IDL.Func([IDL.Nat], [Result_2], ['query']),
         'get_files': IDL.Func([], [IDL.Vec(ICPFileStat)], ['query']),
         'get_path_contents': IDL.Func([IDL.Opt(IDL.Text)], [Result_3], ['query']),
-        'get_status': IDL.Func([], [CanisterStatusResponse], ['query']),
+        'get_status': IDL.Func([], [IDL.Nat64], ['query']),
         'greet': IDL.Func([IDL.Text], [IDL.Text], ['query']),
         'truncate_file': IDL.Func([IDL.Nat], [Result], []),
     });
 };
-exports.idlFactory = idlFactory;
-const init = ({ IDL }) => { return []; };
-exports.init = init;
+export const init = ({ IDL }) => { return []; };

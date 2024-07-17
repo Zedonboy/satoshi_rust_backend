@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,33 +7,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegistryCanister = exports.UserStorageCanister = void 0;
-const auth_client_1 = require("@dfinity/auth-client");
-const utils_1 = require("./utils");
-class UserStorageCanister {
-    constructor(canister_id, identity) {
-        this.backend_actor = (0, utils_1.get_storage_actor)(identity, canister_id);
-    }
-    upload_file(file, path) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let auth = yield auth_client_1.AuthClient.create();
-            let authenticated = yield auth.isAuthenticated();
-            if (!authenticated) {
-                throw new Error("You are not authenticated");
+import { chunkArrayBuffer, } from "./utils";
+import { createActor } from "./declarations/satoshi_register";
+import { createActor as createActorForFileBackend } from "./declarations/satoshi_rust_backend";
+export class UserStorageCanister {
+    constructor(canister_id, identity, host) {
+        this.backend_actor = createActorForFileBackend(canister_id, {
+            agentOptions: {
+                identity,
+                host
             }
-            if (file.size > 1000000) {
-                let chunks = (0, utils_1.chunkArrayBuffer)(yield file.arrayBuffer(), 1);
-                let fd = -1;
+        });
+    }
+    create_file(name, content, path) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let textencoder = new TextEncoder();
+            let byte_array = textencoder.encode(content);
+            let chunks = chunkArrayBuffer(byte_array, 1);
+            let fd = -1;
+            if (byte_array.byteLength > 1000000) {
                 for (let index = 0; index < chunks.length; index++) {
                     const element = chunks[index];
                     if (index == 0) {
                         let v = yield this.backend_actor.create_file({
-                            name: file.name,
+                            name,
                             id: BigInt(0),
                             owner: "",
                             data: new Uint8Array(element),
-                        }, [path]);
+                            hash: []
+                        }, path ? [path] : []);
                         if ("Err" in v) {
                             throw new Error("Could not create File");
                         }
@@ -52,15 +53,47 @@ class UserStorageCanister {
             }
             else {
                 let rxt = yield this.backend_actor.create_file({
-                    name: file.name,
+                    name,
                     id: BigInt(0),
                     owner: "",
-                    data: new Uint8Array(yield file.arrayBuffer()),
-                }, [path]);
+                    data: byte_array,
+                    hash: []
+                }, path ? [path] : []);
                 if ("Err" in rxt) {
                     throw new Error("Could not create File");
                 }
                 return Number(rxt.Ok);
+            }
+        });
+    }
+    truncate_and_update(file_id, content) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.backend_actor.truncate_file(BigInt(file_id));
+            // this.backend_actor.add_chunk(BigInt(file_id), )
+            let encoder = new TextEncoder();
+            let file_bytes = encoder.encode(content);
+            this.add_file_chunks(file_id, file_bytes);
+        });
+    }
+    add_file_chunks(file_id, file_bytes) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (file_bytes.byteLength > 1000000) {
+                let chunks = chunkArrayBuffer(file_bytes, 1);
+                for (let index = 0; index < chunks.length; index++) {
+                    const element = chunks[index];
+                    let rst = yield this.backend_actor.add_chunk(BigInt(file_id), new Uint8Array(element));
+                    if ("Err" in rst) {
+                        throw new Error("Error Adding Chunks");
+                    }
+                }
+                return true;
+            }
+            else {
+                let rst = yield this.backend_actor.add_chunk(BigInt(file_id), file_bytes);
+                if ("Err" in rst) {
+                    throw new Error("Could not create File");
+                }
+                return Number(rst.Ok);
             }
         });
     }
@@ -79,11 +112,20 @@ class UserStorageCanister {
             return yield this.backend_actor.get_path_contents(path ? [path] : []);
         });
     }
+    get_file(file_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.backend_actor.get_file(BigInt(file_id));
+        });
+    }
 }
-exports.UserStorageCanister = UserStorageCanister;
-class RegistryCanister {
-    constructor(canister_id, identity) {
-        this.backend_actor = (0, utils_1.get_registry_actor)(identity, canister_id);
+export class RegistryCanister {
+    constructor(canister_id, identity, host) {
+        this.backend_actor = createActor(canister_id, {
+            agentOptions: {
+                identity,
+                host,
+            },
+        });
     }
     create_user() {
         return this.backend_actor.create_user();
@@ -98,4 +140,3 @@ class RegistryCanister {
         return this.backend_actor.top_up_user_canister();
     }
 }
-exports.RegistryCanister = RegistryCanister;

@@ -18,4 +18,4 @@ export interface _SERVICE {
   'top_up_user_canister' : ActorMethod<[], Result_1>,
 }
 export declare const idlFactory: IDL.InterfaceFactory;
-export declare const init: ({ IDL }: { IDL: IDL }) => IDL.Type[];
+export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

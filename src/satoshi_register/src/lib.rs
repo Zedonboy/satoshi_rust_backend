@@ -10,8 +10,7 @@ use ic_cdk::{
                 TransformArgs, TransformContext, TransformFunc,
             },
             main::{
-                create_canister, install_code, CanisterSettings, CreateCanisterArgument,
-                InstallCodeArgument,
+                canister_status, create_canister, install_code, CanisterIdRecord, CanisterSettings, CanisterStatusResponse, CreateCanisterArgument, InstallCodeArgument
             },
         },
     },
@@ -27,11 +26,20 @@ use serde_bytes::ByteBuf;
 use serde_json::Value;
 use types::{NotifyTopUpArg, NotifyTopUpResult};
 mod types;
-pub const TRANSACTION_FEE: Tokens = Tokens::from_e8s(1000);
+pub const TRANSACTION_FEE: Tokens = Tokens::from_e8s(10000);
 pub const MEMO_MINT_CYCLES: u64 = 0x544e494d;
+pub const MEMO_TOP_UP : u64 = 1347768404;
 pub const MEMO_TRANSFER_TO_PURSE : u64 = 0x644e494d;
 const NOTIFY_TOP_UP_METHOD: &str = "notify_top_up";
+const NOTIFY_MINT_METHOD : &str = "notify_mint_cycles";
 const EXCHANGE_RATE_MAINNET_CANISTER: &str = "uf6dk-hyaaa-aaaaq-qaaaq-cai";
+
+#[cfg(network = "ic")]
+const LEDGER_CANISTER_ID : Principal = MAINNET_LEDGER_CANISTER_ID;
+
+#[cfg(network = "ic")]
+const CMC_CANISTER_ID : Principal = MAINNET_CYCLES_MINTING_CANISTER_ID;
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
@@ -55,7 +63,10 @@ async fn create_user() -> Result<String, RegistryError> {
 
     let balance_args = AccountBalanceArgs { account };
 
-    let user_balance_tokens = account_balance(MAINNET_LEDGER_CANISTER_ID, balance_args)
+    #[cfg(network = "local")]
+    let LEDGER_CANISTER_ID = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
+
+    let user_balance_tokens = account_balance(LEDGER_CANISTER_ID, balance_args)
         .await
         .unwrap();
 
@@ -65,19 +76,33 @@ async fn create_user() -> Result<String, RegistryError> {
         return Err(RegistryError::AmountBelowMin);
     }
 
-    let cycles_acc =
-        AccountIdentifier::new(&MAINNET_CYCLES_MINTING_CANISTER_ID, &Subaccount::from(id()));
+    #[cfg(network = "local")]
+    let CMC_CANISTER_ID = Principal::from_text("rkp4c-7iaaa-aaaaa-aaaca-cai").unwrap();
 
+    let cycles_acc =
+        AccountIdentifier::new(&CMC_CANISTER_ID, &Subaccount::from(id()));
+
+    let amount_result = get_price_of_icp().await;
+
+    if amount_result.is_err() {
+        return Err(RegistryError::SystemError("Error getting Exchange rate data".to_string()));
+    }
+
+    let amount_of_icp_per_dollar = Tokens::from_e8s(amount_result.unwrap() * 3);
+
+    if amount_of_icp_per_dollar >= user_balance_tokens {
+        return Err(RegistryError::AmountBelowMin);
+    }
     let transger_args = TransferArgs {
-        memo: Memo(MEMO_MINT_CYCLES),
-        amount: user_balance_tokens,
+        memo: Memo(MEMO_TOP_UP),
+        amount: user_balance_tokens - amount_of_icp_per_dollar,
         fee: TRANSACTION_FEE,
         from_subaccount: Some(Subaccount::from(caller())),
         to: cycles_acc,
         created_at_time: None,
     };
 
-    let block_height = transfer(MAINNET_LEDGER_CANISTER_ID, transger_args)
+    let block_height = transfer(LEDGER_CANISTER_ID, transger_args)
         .await
         .unwrap()
         .unwrap();
@@ -88,7 +113,7 @@ async fn create_user() -> Result<String, RegistryError> {
     };
 
     let (rslt,): (NotifyTopUpResult,) = call(
-        MAINNET_CYCLES_MINTING_CANISTER_ID,
+        CMC_CANISTER_ID,
         NOTIFY_TOP_UP_METHOD,
         (notify_args,),
     )
@@ -148,14 +173,8 @@ async fn top_up_user_canister() -> Result<u128, RegistryError> {
         return Err(RegistryError::SystemError("Could not get the current exchange rate".to_string()));
     }
 
-    let price_of_icp = price_of_icp_rslt.unwrap();
-
-    let amount_of_icp_per_dollar = 1f64 / price_of_icp;
-
-    let rounded_amount_of_icp_per_dollar = round_up(amount_of_icp_per_dollar, 2);
-
     // amt * 10^8
-    let scaled_icp_token = (rounded_amount_of_icp_per_dollar * 1e8) as u64;
+    let scaled_icp_token = price_of_icp_rslt.unwrap();
 
     if scaled_icp_token >= user_balance {
         return Err(RegistryError::AmountBelowMin)
@@ -186,8 +205,6 @@ async fn get_user_canister() -> Result<String, RegistryError> {
     return Ok(canister_id_opt.unwrap());
 }
 
-
-
 async fn check_user_balance(user : Principal) -> u64 {
      // check if user has deposited ICP.
      let account = AccountIdentifier::new(&id(), &Subaccount::from(user));
@@ -214,15 +231,26 @@ async fn transfer_to_purse(amt_to_transfer : u64, subaccount : Principal) {
         to: canister_purse,
         created_at_time: None,
     };
-    let _ = transfer(MAINNET_LEDGER_CANISTER_ID, transfer_args).await;
+
+    #[cfg(network = "local")]
+    let LEDGER_CANISTER_ID = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
+
+    let _ = transfer(LEDGER_CANISTER_ID, transfer_args).await;
 }
 
 async fn top_up_canister(topup_amt: u64, canister_id : Principal) -> u128 {
+
+    #[cfg(network = "local")]
+    let CMC_CANISTER_ID = Principal::from_text("rkp4c-7iaaa-aaaaa-aaaca-cai").unwrap();
+
+    #[cfg(network = "local")]
+    let LEDGER_CANISTER_ID = Principal::from_text("ryjl3-tyaaa-aaaaa-aaaba-cai").unwrap();
+
     let cycles_acc =
-        AccountIdentifier::new(&MAINNET_CYCLES_MINTING_CANISTER_ID, &Subaccount::from(canister_id));
+        AccountIdentifier::new(&CMC_CANISTER_ID, &Subaccount::from(canister_id));
 
     let transger_args = TransferArgs {
-        memo: Memo(MEMO_MINT_CYCLES),
+        memo: Memo(MEMO_TOP_UP),
         amount: Tokens::from_e8s(topup_amt),
         fee: TRANSACTION_FEE,
         from_subaccount: Some(Subaccount::from(caller())),
@@ -230,7 +258,7 @@ async fn top_up_canister(topup_amt: u64, canister_id : Principal) -> u128 {
         created_at_time: None,
     };
 
-    let block_height = transfer(MAINNET_LEDGER_CANISTER_ID, transger_args)
+    let block_height = transfer(LEDGER_CANISTER_ID, transger_args)
         .await
         .unwrap()
         .unwrap();
@@ -241,7 +269,7 @@ async fn top_up_canister(topup_amt: u64, canister_id : Principal) -> u128 {
     };
 
     let (rslt,): (NotifyTopUpResult,) = call(
-        MAINNET_CYCLES_MINTING_CANISTER_ID,
+        CMC_CANISTER_ID,
         NOTIFY_TOP_UP_METHOD,
         (notify_args,),
     )
@@ -253,20 +281,28 @@ async fn top_up_canister(topup_amt: u64, canister_id : Principal) -> u128 {
     deposited_cycles
 }
 
+
 fn round_up(num: f64, decimal_places: u32) -> f64 {
     let multiplier = 10_f64.powi(decimal_places as i32);
     (num * multiplier).ceil() / multiplier
 }
 
-async fn get_price_of_icp() -> Result<f64, ()> {
+#[cfg(network = "local")]
+async fn get_price_of_icp() -> Result<u64, ()> {
+    Ok(100_000_000)
+}
+
+
+#[cfg(network = "ic")]
+async fn get_price_of_icp() -> Result<u64, ()> {
     let arg = GetExchangeRateRequest {
         base_asset: Asset {
-            symbol: "ICP".to_string(),
-            class: ic_xrc_types::AssetClass::Cryptocurrency,
+            symbol: "USD".to_string(),
+            class: ic_xrc_types::AssetClass::FiatCurrency,
         },
         quote_asset: Asset {
-            symbol: "USD".to_string(),
-            class: AssetClass::FiatCurrency,
+            symbol: "ICP".to_string(),
+            class: AssetClass::Cryptocurrency,
         },
         timestamp: None,
     };
@@ -284,15 +320,36 @@ async fn get_price_of_icp() -> Result<f64, ()> {
     } else {
         let rate = result.unwrap();
         let rate_num = rate.rate;
-        let f_num = rate_num as f64 / 10u64.pow(rate.metadata.decimals) as f64;
+        // used 8 because ICP is 10^8
+        let f_num = multiply_u64_with_power_of_10(rate_num, 8 - rate.metadata.decimals as i32 );
         return Ok(f_num);
     }
 }
 
-#[query]
+fn multiply_u64_with_power_of_10(value: u64, power: i32) -> u64 {
+    if power >= 0 {
+        // Multiply by 10^power
+        value.saturating_mul(10u64.saturating_pow(power as u32))
+    } else {
+        // Divide by 10^(-power)
+        value / 10u64.saturating_pow((-power) as u32)
+    }
+}
+
+#[query(guard = "is_not_anonymous")]
 fn generate_deposit_address() -> String {
+    ic_cdk::print("generate_deposit_address: received");
     let acc_id = AccountIdentifier::new(&id(), &Subaccount::from(caller()));
     acc_id.to_hex()
+}
+
+
+fn is_not_anonymous() -> Result<(), String> {
+    if caller() == Principal::anonymous() {
+        return Err("You are not authenticated".to_string());
+    }
+
+    Ok(())
 }
 
 #[query]

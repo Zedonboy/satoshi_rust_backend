@@ -1,28 +1,129 @@
 {
   "canisters": {
-    "internet_identity": {
-      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
-      "frontend": {},
+    
+    "nns-cycles-minting": {
+      "build": "",
+      "candid": "candid/nns-cycles-minting.did",
       "remote": {
         "id": {
-          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+          "ic": "rkp4c-7iaaa-aaaaa-aaaca-cai",
+          "local": "rkp4c-7iaaa-aaaaa-aaaca-cai"
         }
       },
       "type": "custom",
-      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
+      "wasm": ""
+    },
+    "nns-genesis-token": {
+      "build": "",
+      "candid": "candid/nns-genesis-token.did",
+      "remote": {
+        "id": {
+          "ic": "renrk-eyaaa-aaaaa-aaada-cai",
+          "local": "renrk-eyaaa-aaaaa-aaada-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
+    },
+    "nns-governance": {
+      "build": "",
+      "candid": "candid/nns-governance.did",
+      "remote": {
+        "id": {
+          "ic": "rrkah-fqaaa-aaaaa-aaaaq-cai",
+          "local": "rrkah-fqaaa-aaaaa-aaaaq-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
+    },
+    "nns-ledger": {
+      "build": "",
+      "candid": "candid/nns-ledger.did",
+      "remote": {
+        "id": {
+          "ic": "ryjl3-tyaaa-aaaaa-aaaba-cai",
+          "local": "ryjl3-tyaaa-aaaaa-aaaba-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
+    },
+    "nns-lifeline": {
+      "build": "",
+      "candid": "candid/nns-lifeline.did",
+      "remote": {
+        "id": {
+          "ic": "rno2w-sqaaa-aaaaa-aaacq-cai",
+          "local": "rno2w-sqaaa-aaaaa-aaacq-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
+    },
+    "nns-registry": {
+      "build": "",
+      "candid": "candid/nns-registry.did",
+      "remote": {
+        "id": {
+          "ic": "rwlgt-iiaaa-aaaaa-aaaaa-cai",
+          "local": "rwlgt-iiaaa-aaaaa-aaaaa-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
+    },
+    "nns-root": {
+      "build": "",
+      "candid": "candid/nns-root.did",
+      "remote": {
+        "id": {
+          "ic": "r7inp-6aaaa-aaaaa-aaabq-cai",
+          "local": "r7inp-6aaaa-aaaaa-aaabq-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
+    },
+    "nns-sns-wasm": {
+      "build": "",
+      "candid": "candid/nns-sns-wasm.did",
+      "remote": {
+        "id": {
+          "ic": "qaa6y-5yaaa-aaaaa-aaafa-cai",
+          "local": "qaa6y-5yaaa-aaaaa-aaafa-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": ""
+    },
+    "satoshi_register": {
+      "candid": "src/satoshi_register/satoshi_register.did",
+      "package": "satoshi_register",
+      "type": "rust"
     },
     "satoshi_rust_backend": {
       "candid": "src/satoshi_rust_backend/satoshi_rust_backend.did",
       "package": "satoshi_rust_backend",
       "type": "rust"
-      
-    },
-
-    "satoshi_register": {
-      "candid": "src/satoshi_register/satoshi_register.did",
-      "package": "satoshi_register",
-      "type": "rust"
     }
+  },
+
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8080",
+      "type": "ephemeral",
+      "replica": {
+          "subnet_type": "system"
+          }
+      },
+
+     "network_1": {
+    "bind": "localhost:4943",
+    "replica": {
+      "subnet_type": "application"
+    }
+  }
   },
   "defaults": {
     "build": {
